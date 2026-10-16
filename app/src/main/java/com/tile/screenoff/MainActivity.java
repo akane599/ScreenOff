@@ -230,7 +230,7 @@ public class MainActivity extends Activity {
                 if (s8.isChecked()) showNet();
             } else {
                 ((TextView) findViewById(R.id.title_text)).setText(R.string.shortcutoff);
-                sendBroadcast(new Intent("intent.screenoff.exit"));
+                sendBroadcast(new Intent("intent.screenoff.exit").setPackage(getPackageName()));
             }
 
         });
@@ -437,7 +437,7 @@ public class MainActivity extends Activity {
         button.setOnClickListener(null);
         button.setOnLongClickListener(view -> {
             try {
-                sendBroadcast(new Intent("intent.screenoff.exit"));
+                sendBroadcast(new Intent("intent.screenoff.exit").setPackage(getPackageName()));
                 iScreenOff.closeAndExit();
             } catch (RemoteException e) {
                 e.printStackTrace();

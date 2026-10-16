@@ -15,7 +15,7 @@ public class ScrOff extends Activity {
         super.onCreate(savedInstanceState);
         final String setting = Settings.Secure.getString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
         if (setting != null && setting.contains(getPackageName())) {
-            sendBroadcast(new Intent("action.ScrOff").putExtra("state", true));
+            sendBroadcast(new Intent("action.ScrOff").setPackage(getPackageName()).putExtra("state", true));
         } else {
             final String serviceName = new ComponentName(getPackageName(), GlobalService.class.getName()).flattenToString();
             final String oldSetting = Settings.Secure.getString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
