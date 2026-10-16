@@ -3,7 +3,7 @@
 *Last Updated: 2026-10-16*
 
 ### Main UI and activation
-- **Location:** `app/src/main/java/com/tile/screenoff/MainActivity.java`, `app/src/main/res/layout/main.xml`, `app/src/main/res/values/`
+- **Location:** `app/src/main/java/com/tile/screenoff/MainActivity.java`, `app/src/main/res/layout/main.xml`, `app/src/main/res/values/` (English default; `values-zh/`, `values-zh-rTW/` translations)
 - **Purpose:** Configure controls, persist preferences, display service status, and activate the privileged helper.
 - **Key files:** `MainActivity.java`, `main.xml`, `strings.xml`, `AndroidManifest.xml`
 - **Depends on:** Android Activity/Settings APIs, Shizuku, `IScreenOff`, `GlobalService`

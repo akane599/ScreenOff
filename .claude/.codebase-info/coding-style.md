@@ -15,8 +15,8 @@ The project uses the Gradle wrapper (`gradlew`/`gradlew.bat`) with Android Gradl
 | Functions | lowerCamelCase; Android lifecycle callbacks retain framework names | `setPowerMode`, `onServiceConnected` |
 | Variables | lowerCamelCase; preference keys are short lowercase names | `displayToken`, `netControl`, `scrOffKey` |
 | Constants | uppercase snake_case for numeric/protocol constants | `POWER_MODE_OFF`, `BUFFER_SIZE` |
-| Resources | XML ids and preference-facing names are short lowercase identifiers; user text belongs in `strings.xml` | `screenoff_switch`, `start_global_control` |
+| Resources | XML ids and preference-facing names are short lowercase identifiers; user text belongs in English `values/strings.xml`, with translations in `values-zh/` and `values-zh-rTW/` | `screenoff_switch`, `start_global_control` |
 
 ## Notes
 
-The code is legacy Java with compact one-line conditionals, lambdas, anonymous listeners, and some mixed English/Chinese comments and labels. Preserve existing Android component naming and behavior when making focused changes; notably, `tileService` is intentionally lowercase in its class/file name and manifest reference. Hidden framework APIs are isolated in `ScreenController` and `DisplayControl` and should not be spread into UI/service code.
+The code is legacy Java with compact one-line conditionals, lambdas, anonymous listeners, and English comments and labels (the default locale is English since `9d7f82a`; Chinese lives only in translated resource folders). Preserve existing Android component naming and behavior when making focused changes; notably, `tileService` is intentionally lowercase in its class/file name and manifest reference. Hidden framework APIs are isolated in `ScreenController` and `DisplayControl` and should not be spread into UI/service code.
