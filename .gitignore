@@ -1,5 +1,6 @@
 # --- android-kit
 local.properties
+keystore.properties
 .remember/
 .claude-plugin-config.json
 android-qa-output/
