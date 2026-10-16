@@ -97,7 +97,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
                     // The helper may not be running; screen broadcasts arrive regardless.
                     if (iScreenOff != null) try {
                          iScreenOff.updateNowScreenState(false);
-                    } catch (RemoteException e) {
+                    } catch (RemoteException | SecurityException e) {
                         e.printStackTrace();
                     }
                     view.setKeepScreenOn(false);
@@ -108,7 +108,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
                 case Intent.ACTION_USER_PRESENT:
                     if (iScreenOff != null) try {
                         iScreenOff.updateNowScreenState(true);
-                    } catch (RemoteException e) {
+                    } catch (RemoteException | SecurityException e) {
                         e.printStackTrace();
                     }
                     break;
@@ -295,7 +295,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
             iScreenOff.setPowerMode(bb);
             view.setKeepScreenOn(bb);
             if (shake && bb) listener.enable();
-        } catch (RemoteException e) {
+        } catch (RemoteException | SecurityException e) {
             e.printStackTrace();
         }
 
@@ -318,7 +318,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
                 screenoff(false);
                 return true;
             }
-        } catch (RemoteException e) {
+        } catch (RemoteException | SecurityException e) {
             e.printStackTrace();
         }
 
@@ -464,7 +464,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
                     nowState = "Screen-off mode";
                     break;
             }
-        } catch (RemoteException e) {
+        } catch (RemoteException | SecurityException e) {
             e.printStackTrace();
         }
         return Objects.requireNonNull(loadHtml("index.html"))

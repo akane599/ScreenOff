@@ -401,7 +401,7 @@ public class MainActivity extends Activity {
             if (!isServiceOK) return;
             try {
                 iScreenOff.setPowerMode(!b);
-            } catch (RemoteException e) {
+            } catch (RemoteException | SecurityException e) {
                 e.printStackTrace();
             }
         });
@@ -438,7 +438,7 @@ public class MainActivity extends Activity {
             try {
                 sendBroadcast(new Intent("intent.screenoff.exit").setPackage(getPackageName()));
                 iScreenOff.closeAndExit();
-            } catch (RemoteException e) {
+            } catch (RemoteException | SecurityException e) {
                 e.printStackTrace();
             }
             Toast.makeText(this, R.string.service_closed, Toast.LENGTH_SHORT).show();
