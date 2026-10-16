@@ -25,7 +25,7 @@
     },
     {
       "path": "rules/android-orchestration.md",
-      "hash": "195022730b47b186a6af101ed9a566446ec81993a3ce11905b19ebe1a3d229c2",
+      "hash": "a53ea9586d632e398fcda89bd6838a277c5d4d95eb090d7fa53eb8b174061d5c",
       "description": "Android ticket ownership, verification and mixed Claude/GPT routing through Sidequest profile android-kit-hybrid",
       "globs": [],
       "dirs": [],
