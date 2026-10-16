@@ -1,15 +1,19 @@
+<!-- android-kit -->
 # CLAUDE.md — ScreenOff
 
 Turns the phone's display panel off while apps keep running (SurfaceControl reflection via Shizuku, like scrcpy), for users of screen mirroring and background tasks. Controlled from a QS tile, an accessibility service and a local HTTP/TCP server.
 Android, developed on Ubuntu from the CLI.
 
-- Origin: fork of WuDi-ZhanShen/ScreenOff @ 354045d · Integration branch: main
+<!-- STACK:BEGIN (filled by /bootstrap) -->
+- Origin: fork of WuDi-ZhanShen/ScreenOff @ 354045d · this fork akane599/ScreenOff @ d7d44a8 · Integration branch: main
 - Language: java (11 Java, 0 Kotlin) · UI: Views (1 XML layout) · screenshot tests: none
-- JDK target 1.8 (source/target) · Gradle 8.9 · AGP 8.7.3 · Kotlin — · compileSdk 35 · targetSdk 35 · minSdk 21
+- JDK target 1.8 (source/target; build JDK 21) · Gradle 8.9 · AGP 8.7.3 · Kotlin — · compileSdk 35 · targetSdk 35 · minSdk 21
 - Modules: :app · Architecture: single module, no layering (Activity + services + AIDL Shizuku UserService) · DI/DB/Net: none / none / none (hand-rolled HTTP/TCP server)
 - Deps: dev.rikka.shizuku:api/provider 13.1.0 · AIDL enabled · no flavors, single debug/release
 - App id: com.tile.screenoff · Launcher: .MainActivity
-- Baseline: blocked (environment: Google Maven returns 404, AGP can't resolve) · 0 unit tests, no test sources (PROGRESS.md)
+- Baseline: failing at configuration (`app/build.gradle:21` Windows keystore path `D:\\key.keystore` → URISyntaxException on Linux, blocks every task incl. debug) · 0 unit tests, no test sources (PROGRESS.md)
+<!-- STACK:END -->
+
 ## How work flows here
 - **The main session orchestrates; it doesn't implement.** Work becomes Sidequest tickets, executors work in isolated worktrees on their returned Claude or GPT route, and the main session integrates verified results. Bounded inline-safe maintenance follows Sidequest's current rules.
 - **Routing** (Sidequest profile `android-kit-hybrid`): Claude Opus/medium orchestrates. Follow current mixed Sidequest routes: Luna bounded work; Terra routine coding/UI/review; Opus debugging, hard coding, experiments and visual judgement; Sonnet research. Explicit category fallbacks may cross Claude/GPT; global fallback stays provider-scoped. Inspect effective routes and disclose overrides or provider blockers.
@@ -25,6 +29,6 @@ Android, developed on Ubuntu from the CLI.
 ## Commands
 - Build: `./gradlew :app:assembleDebug --console=plain -q` · Unit: `:app:testDebugUnitTest` · Lint: `:app:lintDebug`
 - Screenshots: none (Views app, no screenshot framework)
-- Release signing in `app/build.gradle` points at a Windows keystore path (`D:\\key.keystore`); only debug builds work here.
+- Release signing in `app/build.gradle` points at a Windows keystore path (`D:\\key.keystore`) and fails project evaluation on Linux, so no task runs until it is made conditional.
 - Device: `./gradlew :app:installDebug -q && adb shell am start -n com.tile.screenoff/.MainActivity` · logs: `adb logcat -d --pid=$(adb shell pidof -s com.tile.screenoff) | tail -80`
-- Emulator (no KVM on this host; prefer a physical device): `emulator -avd <AVD> -no-window -no-audio &` then `adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'`
+- Emulator (KVM available): `emulator -avd <AVD> -no-window -no-audio &` then `adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'` · Shizuku-dependent behavior still needs a device or emulator with Shizuku/ADB activation.
