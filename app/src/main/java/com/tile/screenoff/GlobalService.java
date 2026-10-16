@@ -91,7 +91,8 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
                     floatWindow();
                     break;
                 case Intent.ACTION_SCREEN_OFF:
-                    try {
+                    // The helper may not be running; screen broadcasts arrive regardless.
+                    if (iScreenOff != null) try {
                          iScreenOff.updateNowScreenState(false);
                     } catch (RemoteException e) {
                         e.printStackTrace();
@@ -102,7 +103,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
                     break;
                 case Intent.ACTION_SCREEN_ON:
                 case Intent.ACTION_USER_PRESENT:
-                    try {
+                    if (iScreenOff != null) try {
                         iScreenOff.updateNowScreenState(true);
                     } catch (RemoteException e) {
                         e.printStackTrace();
@@ -285,6 +286,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
 
 
     void screenoff(Boolean bb) {
+        if (iScreenOff == null) return;
         try {
             if (iScreenOff.getNowScreenState() == 0) return;
             iScreenOff.setPowerMode(bb);
@@ -299,7 +301,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
-        if (!volume || event.getAction() == KeyEvent.ACTION_UP)
+        if (!volume || iScreenOff == null || event.getAction() == KeyEvent.ACTION_UP)
             return super.onKeyEvent(event);
 
         try {
@@ -447,7 +449,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
 
     private String buildIndexHtml(String token) {
         String nowState = "Unknown";
-        try {
+        if (iScreenOff != null) try {
             switch (iScreenOff.getNowScreenState()) {
                 case 0:
                     nowState = "Screen off";
