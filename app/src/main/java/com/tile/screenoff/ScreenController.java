@@ -290,7 +290,8 @@ public class ScreenController {
                     null,
                     null,
                     null,
-                    0,
+                    // appOp: OP_NONE. 0 is OP_COARSE_LOCATION, which Android 17 enforces on receivers.
+                    -1,
                     null,
                     false,
                     true,
