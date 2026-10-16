@@ -59,8 +59,6 @@ import rikka.shizuku.Shizuku;
 
 public class MainActivity extends Activity {
     private static final String BINDER_ACTION = "intent.screenoff.sendBinder";
-    // AOSP packages/Shell requests DUMP; signature protection keeps third-party apps from it.
-    private static final String BINDER_SENDER_PERMISSION = "android.permission.DUMP";
     private boolean isExpand = false, isServiceOK = false, isPermissionResultListenerRegistered = false;
     private int scrOffKey, scrOnKey;
     public IScreenOff iScreenOff = null;
@@ -108,9 +106,9 @@ public class MainActivity extends Activity {
 
         setButtonsOnclick(isNight, sp);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(mBroadcastReceiver, new IntentFilter(BINDER_ACTION), BINDER_SENDER_PERMISSION, null, RECEIVER_EXPORTED);
+            registerReceiver(mBroadcastReceiver, new IntentFilter(BINDER_ACTION), RECEIVER_EXPORTED);
         } else {
-            registerReceiver(mBroadcastReceiver, new IntentFilter(BINDER_ACTION), BINDER_SENDER_PERMISSION, null);
+            registerReceiver(mBroadcastReceiver, new IntentFilter(BINDER_ACTION));
         }
         super.onCreate(savedInstanceState);
 

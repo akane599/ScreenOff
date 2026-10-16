@@ -26,7 +26,6 @@ public class ScreenController {
     static Intent intent = null;
     static Object iActivityManagerObj = null;
     private static final String SCREEN_OFF_PACKAGE = "com.tile.screenoff";
-    private static final String RECEIVE_BINDER_PERMISSION = "com.tile.screenoff.permission.RECEIVE_BINDER";
     private static int screenOffUid = -1;
 
 
@@ -111,6 +110,7 @@ public class ScreenController {
     }
 
     private static void enforceScreenOffCaller() {
+        // This is the primary protection because sticky replay can hand the raw Binder to any registrant.
         if (Binder.getCallingUid() != screenOffUid) {
             throw new SecurityException("Only ScreenOff may call this binder");
         }
@@ -311,7 +311,7 @@ public class ScreenController {
                     int.class
             );
             // Invoke broadcastIntent to send the sticky broadcast.
-            broadcastIntentMethod.invoke(
+            int broadcastResult = (Integer) broadcastIntentMethod.invoke(
                     iActivityManagerObj,
                     null,
                     intent,
@@ -320,7 +320,7 @@ public class ScreenController {
                     -1,
                     null,
                     null,
-                    new String[]{RECEIVE_BINDER_PERMISSION},
+                    null,
                     // appOp: OP_NONE. 0 is OP_COARSE_LOCATION, which Android 17 enforces on receivers.
                     -1,
                     null,
@@ -328,12 +328,12 @@ public class ScreenController {
                     true,
                     -1
             );
+            return broadcastResult >= 0;
 
         } catch (Exception e) {
 
             return false;
         }
-        return true;
     }
 
     private static boolean removeStickyBroadcast() {
