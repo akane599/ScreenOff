@@ -33,6 +33,39 @@
       "priority": 15,
       "enabled": true,
       "include": []
+    },
+    {
+      "path": "rules/implementation-baseline.md",
+      "hash": "d2d3ca58d66e3868adfa1b2e820517ba9a090df7f8f1a1ab28c8b95eeece02a6",
+      "description": "Implementation baseline for ScreenOff changes",
+      "globs": [],
+      "dirs": [],
+      "prompt": [],
+      "priority": 95,
+      "enabled": true,
+      "include": []
+    },
+    {
+      "path": "rules/java-project.md",
+      "hash": "a60ae25a5932ffbc4fbda4417e63fccb5bb7cc94c6a850641d1d2f8d7f1fdea8",
+      "description": "ScreenOff is a Java/Views app; keep new code in its language and UI toolkit",
+      "globs": [],
+      "dirs": [],
+      "prompt": [],
+      "priority": 90,
+      "enabled": true,
+      "include": []
+    },
+    {
+      "path": "rules/self-improvement.md",
+      "hash": "c27ba594de9176a7bf8a15a485dce08f6b2a7c9a6b7a194edc79b960d59445d1",
+      "description": "Self-improvement: build the capability that makes the next goal cheaper",
+      "globs": [],
+      "dirs": [],
+      "prompt": [],
+      "priority": 40,
+      "enabled": true,
+      "include": []
     }
   ]
 }
