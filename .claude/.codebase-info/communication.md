@@ -1,6 +1,6 @@
 # Communication
 
-*Last Updated: 2026-10-16*
+*Last Updated: 2026-10-17*
 
 ## APIs
 
@@ -31,10 +31,10 @@ The LAN surface has no authentication in this version. Treat the displayed addre
 
 ## Events & Messaging
 
-- `intent.screenoff.sendBinder` is the sticky helper-to-app Binder handoff.
-- `intent.screenoff.exit` asks `GlobalService` to disable/stop itself.
-- `action.ScrOff` carries a boolean `state` and is sent by `ScrOff`/`ScrOn` to request a display action.
-- `Intent.ACTION_SCREEN_OFF`, `ACTION_SCREEN_ON`, and `ACTION_USER_PRESENT` are consumed by `GlobalService` to update the helper's state and overlay behavior.
+- `intent.screenoff.sendBinder` is the sticky helper-to-app Binder handoff. The helper sends it via reflected `IActivityManager.broadcastIntent` with `appOp=-1` (`OP_NONE`); `0` is `OP_COARSE_LOCATION`, which Android 17 enforces on receivers. App receivers (`MainActivity`, `GlobalService`) register it `RECEIVER_EXPORTED` because the sender is the shell/root helper; it is not caller-authenticated (open security finding).
+- `intent.screenoff.exit` asks `GlobalService` to disable/stop itself; sent by `MainActivity` with `setPackage(getPackageName())`.
+- `action.ScrOff` carries a boolean `state` and is sent by `ScrOff`/`ScrOn` with `setPackage(getPackageName())` to request a display action.
+- `GlobalService` registers `action.ScrOff`, `intent.screenoff.exit`, `Intent.ACTION_SCREEN_OFF`, `ACTION_SCREEN_ON`, and `ACTION_USER_PRESENT` in a second filter with `RECEIVER_NOT_EXPORTED` (API 33+). Senders must stay package-explicit: on API 37 implicit app broadcasts matched no NOT_EXPORTED receiver. The screen-state actions update the helper's state and overlay behavior.
 - `SharedPreferences` file `s` is the in-process configuration channel for overlay, gesture, orientation, key, and network settings.
 
 ## External Integrations

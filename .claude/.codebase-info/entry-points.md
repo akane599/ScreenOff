@@ -1,6 +1,6 @@
 # Entry Points
 
-*Last Updated: 2026-10-16*
+*Last Updated: 2026-10-17*
 
 ## Entry Points
 
@@ -19,4 +19,4 @@ The main activation path begins in `MainActivity.showActivate()`. It writes `sta
 
 `ScreenController.main()` requires shell or root, creates its `IScreenOff.Stub`, and publishes it in the sticky `intent.screenoff.sendBinder` broadcast. `MainActivity` and `GlobalService` receive the `BinderContainer`, unwrap the binder, and invoke the AIDL proxy. A UI switch or overlay action calls `setPowerMode`; the helper reflects the matching `SurfaceControl` method and changes the display power mode.
 
-For the quick-settings path, `tileService.onClick()` launches `ScrOff`, which either broadcasts `action.ScrOff` immediately when the accessibility service is enabled or opens accessibility settings. `GlobalService` handles that action and delegates to the same Binder-backed `screenoff()` path.
+For the quick-settings path, `tileService.onClick()` launches `ScrOff` (via `startActivityAndCollapse(PendingIntent)` on API 34+, where the `Intent` overload throws), which either broadcasts `action.ScrOff` immediately when the accessibility service is enabled or opens accessibility settings. `GlobalService` handles that action and delegates to the same Binder-backed `screenoff()` path.
