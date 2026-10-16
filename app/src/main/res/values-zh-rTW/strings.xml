@@ -38,4 +38,11 @@
     <string name="tile">全局控制</string>
     <string name="service_closed">息屏運行服務已關閉</string>
     <string name="net_ctl">局域網控製亮滅屏</string>
+    <string name="network_wlan">無線網路</string>
+    <string name="network_ethernet">乙太網路</string>
+    <string name="network_usb">USB</string>
+    <string name="network_p2p">Wi-Fi Direct</string>
+    <string name="network_loopback">本機迴路</string>
+    <string name="network_url_format">%1$s：%2$s\n</string>
+    <string name="network_unavailable">無可用網路</string>
 </resources>

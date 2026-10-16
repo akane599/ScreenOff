@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="/favicon.ico?t={{token}}">
     <script type="text/javascript">
         function copyLink(){
             document.getElementById("copy").select();
@@ -18,18 +19,18 @@
                     width : 200,
                     height : 200
                 });
-                qrcode.makeCode(window.location.host);
+                qrcode.makeCode(window.location.href);
         }
 
 
 		function sendOnRequest() {
 			const xhr = new XMLHttpRequest();
-			xhr.open('GET', '1?' + Math.random(), true);
+			xhr.open('GET', '/1?t={{token}}&r=' + Math.random(), true);
 			xhr.send();
 		}
 		function sendSpecialRequest() {
 			const xhr = new XMLHttpRequest();
-			xhr.open('GET', '2?' + Math.random(), true);
+			xhr.open('GET', '/2?t={{token}}&r=' + Math.random(), true);
 			xhr.send();
 		}
 

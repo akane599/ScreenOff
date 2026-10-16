@@ -52,7 +52,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.Locale;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -116,46 +115,45 @@ public class MainActivity extends Activity {
 
 
     private void showNet() {
-        String[] i = new String[]{"wlan: ", "eth: ", "usb: ", "p2p: ", "lo: ", "unknown: "};
-        int i2;
-        boolean avalible = false;
+        String[] networkNames = new String[]{
+                getString(R.string.network_wlan), getString(R.string.network_ethernet),
+                getString(R.string.network_usb), getString(R.string.network_p2p),
+                getString(R.string.network_loopback)
+        };
+        String token = GlobalService.getOrCreateNetworkToken(getSharedPreferences("s", 0));
+        StringBuilder addresses = new StringBuilder();
         try {
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
             while (networkInterfaces.hasMoreElements()) {
                 NetworkInterface nextElement = networkInterfaces.nextElement();
                 String name = nextElement.getName().toLowerCase(Locale.US);
+                int type;
                 if (name.contains("wlan"))
-                    i2 = 0;
+                    type = 0;
                 else if (name.contains("eth"))
-                    i2 = 1;
+                    type = 1;
                 else if (name.contains("usb"))
-                    i2 = 2;
+                    type = 2;
                 else if (name.contains("p2p"))
-                    i2 = 3;
+                    type = 3;
                 else if (name.contains("lo"))
-                    i2 = 4;
+                    type = 4;
                 else
-                    i2 = 5;
+                    continue;
                 Enumeration<InetAddress> inetAddresses = nextElement.getInetAddresses();
                 while (inetAddresses.hasMoreElements()) {
-                    InetAddress nextElement2 = inetAddresses.nextElement();
-                    if (!nextElement2.isLoopbackAddress() && nextElement2 instanceof Inet4Address) {
-                        i[i2] += nextElement2.getHostAddress() + ":" + GlobalService.port + " ";
-                        avalible = true;
+                    InetAddress address = inetAddresses.nextElement();
+                    if (!address.isLoopbackAddress() && address instanceof Inet4Address) {
+                        String url = "http://" + address.getHostAddress() + ":" + GlobalService.port + "/?t=" + token;
+                        addresses.append(getString(R.string.network_url_format, networkNames[type], url));
                     }
                 }
             }
         } catch (Exception ignored) {
         }
-        int j = 0;
-        StringBuilder sb = new StringBuilder();
-        while (j < 5) {
-            if (Pattern.compile(": ").split(i[j]).length > 1) sb.append(i[j]);
-            j++;
-        }
         TextView textView = findViewById(R.id.title_text);
         textView.setOnClickListener(null);
-        textView.setText(avalible ? sb.toString() : "no network avalible");
+        textView.setText(addresses.length() > 0 ? addresses.toString() : getString(R.string.network_unavailable));
     }
 
     private void setButtonsOnclick(boolean isNight, SharedPreferences sp) {

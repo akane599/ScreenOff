@@ -7,6 +7,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class HttpRequestParserTest {
     @Test
@@ -88,5 +89,17 @@ public class HttpRequestParserTest {
         parser.add("GET /fresh HTTP/1.1\r\n\r\n".getBytes());
 
         assertEquals("/fresh", parser.parse().getRequestTarget());
+    }
+
+    @Test
+    public void requestLargerThanHeaderLimitIsRejected() {
+        HttpRequestParser parser = new HttpRequestParser();
+        byte[] oversized = new byte[HttpRequestParser.MAX_HEADER_BYTES + 1];
+        java.util.Arrays.fill(oversized, (byte) 'a');
+
+        parser.add(oversized);
+
+        assertTrue(parser.isTooLarge());
+        assertNull(parser.parse());
     }
 }

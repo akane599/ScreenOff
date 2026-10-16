@@ -3,24 +3,41 @@ package com.tile.screenoff;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
+import java.net.SocketException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SimpleTcpServer {
+    private static final int SOCKET_TIMEOUT_MS = 10_000;
+    private static final int BUFFER_SIZE = 1024;
 
     public interface TcpConnectionListener {
-        void onReceive(byte[] data);
-        void onResponseSent();
+        void onRequest(HttpRequest request, Connection connection);
+        void onRequestTooLarge(Connection connection);
     }
-    private ServerSocket serverSocket;
-    private static final int CAPACITY = 1024 * 1024;
+
+    public static class Connection {
+        private final Socket socket;
+        private final BufferedOutputStream out;
+
+        Connection(Socket socket) throws IOException {
+            this.socket = socket;
+            this.out = new BufferedOutputStream(socket.getOutputStream());
+        }
+
+        public synchronized void output(byte[] data) throws IOException {
+            out.write(data);
+            out.flush();
+        }
+    }
 
     private final TcpConnectionListener listener;
-    private BufferedInputStream in;
-    private OutputStream out;
+    private final Set<Socket> connections = Collections.synchronizedSet(new HashSet<Socket>());
+    private ServerSocket serverSocket;
 
     public SimpleTcpServer(TcpConnectionListener listener, int port) {
         this.listener = listener;
@@ -28,89 +45,80 @@ public class SimpleTcpServer {
             serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(port));
         } catch (IOException e) {
-            e.printStackTrace();
+            serverSocket = null;
         }
     }
 
     public void start() {
-        if (serverSocket == null) {
+        if (serverSocket == null || serverSocket.isClosed()) {
             return;
         }
 
         new Thread(() -> {
-            try {
-                Socket socket = serverSocket.accept();
-                in = new BufferedInputStream(socket.getInputStream());
-                out = new BufferedOutputStream(socket.getOutputStream());
-                startInputThread();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-
-    private void startInputThread() {
-        new Thread(() -> {
-            try {
-                while(true) {
-                    byte[] buf = new byte[CAPACITY];
-                    if (in == null) {
-                        break;
-                    }
-                    int size = in.read(buf);
-                    if (size > 0) {
-                        byte[] chunk = Arrays.copyOfRange(buf, 0, size);
-                        listener.onReceive(chunk);
-                    } else {
-                        restart();
-                        break;
-                    }
-                }
-            } catch (IOException e) {
-                restart();
-            }
-        }).start();
-    }
-
-    public void output(String data) {
-        output(data.getBytes());
-    }
-
-    public void output(final byte[] data) {
-        new Thread(() -> {
-            if (out != null) {
+            while (!serverSocket.isClosed()) {
                 try {
-                    out.write(data);
-                    out.flush();
-                    listener.onResponseSent();
-                } catch (IOException e) {
-                    restart();
+                    Socket socket = serverSocket.accept();
+                    socket.setSoTimeout(SOCKET_TIMEOUT_MS);
+                    connections.add(socket);
+                    new Thread(() -> handle(socket)).start();
+                } catch (SocketException e) {
+                    if (!serverSocket.isClosed()) {
+                        continue;
+                    }
+                } catch (IOException ignored) {
                 }
             }
         }).start();
     }
 
-    public void stop() {
+    private void handle(Socket socket) {
         try {
-            if (in != null) {
-                in.close();
-                in = null;
+            Connection connection = new Connection(socket);
+            BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+            HttpRequestParser parser = new HttpRequestParser();
+            byte[] buffer = new byte[BUFFER_SIZE];
+            while (!parser.isComplete() && !parser.isTooLarge()) {
+                int size = in.read(buffer);
+                if (size < 0) {
+                    return;
+                }
+                byte[] chunk = new byte[size];
+                System.arraycopy(buffer, 0, chunk, 0, size);
+                parser.add(chunk);
             }
-            if (out != null) {
-                out.close();
-                out = null;
+            if (parser.isTooLarge()) {
+                listener.onRequestTooLarge(connection);
+            } else {
+                HttpRequest request = parser.parse();
+                if (request != null) {
+                    listener.onRequest(request, connection);
+                }
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignored) {
         } finally {
-            in = null;
-            out = null;
+            connections.remove(socket);
+            try {
+                socket.close();
+            } catch (IOException ignored) {
+            }
         }
     }
 
-    public void restart() {
-        stop();
-        start();
+    public void stop() {
+        if (serverSocket != null) {
+            try {
+                serverSocket.close();
+            } catch (IOException ignored) {
+            }
+        }
+        synchronized (connections) {
+            for (Socket socket : connections) {
+                try {
+                    socket.close();
+                } catch (IOException ignored) {
+                }
+            }
+            connections.clear();
+        }
     }
 }

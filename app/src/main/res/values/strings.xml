@@ -38,4 +38,11 @@
     <string name="tile">Global control</string>
     <string name="service_closed">Screen-off mode service stopped</string>
     <string name="net_ctl">Control screen over local network</string>
+    <string name="network_wlan">Wi-Fi</string>
+    <string name="network_ethernet">Ethernet</string>
+    <string name="network_usb">USB</string>
+    <string name="network_p2p">Wi-Fi Direct</string>
+    <string name="network_loopback">Loopback</string>
+    <string name="network_url_format">%1$s: %2$s\n</string>
+    <string name="network_unavailable">No network available</string>
 </resources>

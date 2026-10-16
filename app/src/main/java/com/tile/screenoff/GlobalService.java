@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -33,6 +34,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -378,70 +380,72 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
 
 
     public static int port = 20000;
+    private static final String NETWORK_TOKEN_KEY = "net_token";
     private SimpleTcpServer server;
+
+    static synchronized String getOrCreateNetworkToken(SharedPreferences preferences) {
+        String token = preferences.getString(NETWORK_TOKEN_KEY, null);
+        if (token == null) {
+            byte[] tokenBytes = new byte[16];
+            new SecureRandom().nextBytes(tokenBytes);
+            token = Base64.encodeToString(tokenBytes, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
+            preferences.edit().putString(NETWORK_TOKEN_KEY, token).apply();
+        }
+        return token;
+    }
 
     private void startServer() {
         if (server != null) return;
+        final String token = getOrCreateNetworkToken(sp);
         server = new SimpleTcpServer(new SimpleTcpServer.TcpConnectionListener() {
-            private final HttpRequestParser parser = new HttpRequestParser();
-
             @Override
-            public void onReceive(final byte[] data) {
-                parser.add(data);
-                final HttpRequest request = parser.parse();
-                if (request != null) {
-                    output(request);
-                    parser.clear();
+            public void onRequest(HttpRequest request, SimpleTcpServer.Connection connection) {
+                if (!request.isAuthorized(token)) {
+                    outputHtml(connection, "", "403 Forbidden");
+                    return;
                 }
+                output(request, connection, token);
             }
 
             @Override
-            public void onResponseSent() {
-                server.restart();
+            public void onRequestTooLarge(SimpleTcpServer.Connection connection) {
+                outputHtml(connection, "", "431 Request Header Fields Too Large");
             }
-
         }, port);
         server.start();
-
     }
 
     void stopServer() {
-        server.stop();
-        server = null;
+        if (server != null) {
+            server.stop();
+            server = null;
+        }
     }
 
-    private void output(HttpRequest request) {
-        if (server == null) {
-            return;
-        }
-        String target = request.getRequestTarget();
-        Log.d("TAG", "output: " + target);
-        if (target.equals("/") || target.equals("/index.html")) {
-            outputHtml(buildIndexHtml(request), "200 OK");
-        } else if (target.equals("/favicon.ico")) {
-            outputPng(Objects.requireNonNull(loadBinary("favicon.png")));
-        } else {
+    private void output(HttpRequest request, SimpleTcpServer.Connection connection, String token) {
+        String path = request.getPath();
+        if (path.equals("/") || path.equals("/index.html")) {
+            outputHtml(connection, buildIndexHtml(token), "200 OK");
+        } else if (path.equals("/favicon.ico")) {
+            outputPng(connection, Objects.requireNonNull(loadBinary("favicon.png")));
+        } else if (path.equals("/1")) {
             try {
-                switch (target.substring(0, 3)) {
-                    case "/1?":
-                        iScreenOff.setPowerMode(false);
-                        outputHtml("", "200 OK");
-                        break;
-                    case "/2?":
-                        iScreenOff.setPowerMode(true);
-                        outputHtml("", "200 OK");
-                        break;
-                    default:
-                        outputHtml(build404Html(), "404 Not Found");
-                        break;
-                }
+                iScreenOff.setPowerMode(false);
+                outputHtml(connection, "", "200 OK");
             } catch (Exception ignored) {
             }
-
+        } else if (path.equals("/2")) {
+            try {
+                iScreenOff.setPowerMode(true);
+                outputHtml(connection, "", "200 OK");
+            } catch (Exception ignored) {
+            }
+        } else {
+            outputHtml(connection, build404Html(), "404 Not Found");
         }
     }
 
-    private String buildIndexHtml(HttpRequest request) {
+    private String buildIndexHtml(String token) {
         String nowState = "Unknown";
         try {
             switch (iScreenOff.getNowScreenState()) {
@@ -461,7 +465,8 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
         return Objects.requireNonNull(loadHtml("index.html"))
                 .replace("{{brand}}", Build.BRAND)
                 .replace("{{device}}", Build.MODEL + " Android " + Build.VERSION.RELEASE)
-                .replace("{{state}}", nowState);
+                .replace("{{state}}", nowState)
+                .replace("{{token}}", token);
     }
 
     private String build404Html() {
@@ -472,7 +477,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
     private static final byte LF = 0x0a;
     private static final byte CR = 0x0d;
 
-    private void outputHtml(String html, String responseCode) {
+    private void outputHtml(SimpleTcpServer.Connection connection, String html, String responseCode) {
         String startLine = "HTTP/1.1 " + responseCode;
         List<String> responseHeaders = new ArrayList<>();
         responseHeaders.add("Content-Type: text/html; charset=UTF-8");
@@ -484,10 +489,13 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
         }
         builder.append(new String(new byte[]{CR, LF}));
         builder.append(html);
-        server.output(builder.toString());
+        try {
+            connection.output(builder.toString().getBytes());
+        } catch (IOException ignored) {
+        }
     }
 
-    private void outputPng(byte[] png) {
+    private void outputPng(SimpleTcpServer.Connection connection, byte[] png) {
         String startLine = "HTTP/1.1 " + "200 OK";
         List<String> responseHeaders = new ArrayList<>();
         responseHeaders.add("Content-Type: image/png");
@@ -502,7 +510,10 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
         byte[] output = new byte[headerField.length + png.length];
         System.arraycopy(headerField, 0, output, 0, headerField.length);
         System.arraycopy(png, 0, output, headerField.length, png.length);
-        server.output(output);
+        try {
+            connection.output(output);
+        } catch (IOException ignored) {
+        }
     }
 
     private String loadHtml(String fileName) {
