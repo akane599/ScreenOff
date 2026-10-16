@@ -10,5 +10,5 @@ target_path="$cache_dir/ScreenController.dex"
 if [[ -e $origin_path ]]; then
     cp -rf "$origin_path" $target_path
     export CLASSPATH="$target_path"
-    nohup app_process /system/bin com.tile.screenoff.ScreenController > /dev/null 2>&1 &
+    nohup app_process /system/bin com.tile.screenoff.ScreenController "$1" > /dev/null 2>&1 &
 fi

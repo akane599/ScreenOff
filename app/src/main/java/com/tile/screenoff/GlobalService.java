@@ -44,6 +44,10 @@ import rikka.shizuku.Shizuku;
 
 public class GlobalService extends AccessibilityService implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private static final String BINDER_ACTION = "intent.screenoff.sendBinder";
+    // AOSP packages/Shell requests DUMP; signature protection keeps third-party apps from it.
+    private static final String BINDER_SENDER_PERMISSION = "android.permission.DUMP";
+
 
     private WindowManager windowManager;
     private WindowManager.LayoutParams params;
@@ -275,10 +279,10 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
         filter.addAction("action.ScrOff");
         filter.addAction("intent.screenoff.exit");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(myReceiver, new IntentFilter("intent.screenoff.sendBinder"), RECEIVER_EXPORTED);
+            registerReceiver(myReceiver, new IntentFilter(BINDER_ACTION), BINDER_SENDER_PERMISSION, null, RECEIVER_EXPORTED);
             registerReceiver(myReceiver, filter, RECEIVER_NOT_EXPORTED);
         } else {
-            registerReceiver(myReceiver, new IntentFilter("intent.screenoff.sendBinder"));
+            registerReceiver(myReceiver, new IntentFilter(BINDER_ACTION), BINDER_SENDER_PERMISSION, null);
             registerReceiver(myReceiver, filter);
         }
         sp.registerOnSharedPreferenceChangeListener(this);

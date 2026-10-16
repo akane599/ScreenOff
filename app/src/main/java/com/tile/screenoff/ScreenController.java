@@ -3,6 +3,7 @@ package com.tile.screenoff;
 import android.app.IApplicationThread;
 import android.content.IIntentReceiver;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,6 +25,9 @@ public class ScreenController {
     static boolean isBroadcastSent = false;
     static Intent intent = null;
     static Object iActivityManagerObj = null;
+    private static final String SCREEN_OFF_PACKAGE = "com.tile.screenoff";
+    private static final String RECEIVE_BINDER_PERMISSION = "com.tile.screenoff.permission.RECEIVE_BINDER";
+    private static int screenOffUid = -1;
 
 
     public enum ScreenState {
@@ -106,6 +110,22 @@ public class ScreenController {
         }
     }
 
+    private static void enforceScreenOffCaller() {
+        if (Binder.getCallingUid() != screenOffUid) {
+            throw new SecurityException("Only ScreenOff may call this binder");
+        }
+    }
+
+    private static boolean initializeScreenOffUid(String[] args) {
+        if (args.length != 1) return false;
+        try {
+            screenOffUid = Integer.parseInt(args[0]);
+            return screenOffUid > 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     public static void main(String[] args) {
 
         if (Looper.getMainLooper() == null) {
@@ -117,6 +137,12 @@ public class ScreenController {
         int uid = android.os.Process.myUid();
         if (uid != 0 && uid != 2000) {
             System.err.printf("Insufficient permission! Need to be launched by adb (uid 2000) or root (uid 0), but your uid is %d \n", uid);
+            System.exit(-1);
+            return;
+        }
+
+        if (!initializeScreenOffUid(args)) {
+            System.err.println("Missing or invalid ScreenOff application uid.");
             System.exit(-1);
             return;
         }
@@ -214,6 +240,7 @@ public class ScreenController {
             IBinder binder = new IScreenOff.Stub() {
                 @Override
                 public void setPowerMode(boolean turnOff) throws RemoteException {
+                    enforceScreenOffCaller();
                     if (turnOff) {
                         if (screenState == ScreenState.STATE_ON) {
                             setDisplayPowerMode(getBuiltInDisplay(), POWER_MODE_OFF);
@@ -230,16 +257,19 @@ public class ScreenController {
 
                 @Override
                 public int getNowScreenState() throws RemoteException {
+                    enforceScreenOffCaller();
                     return screenState.ordinal();
                 }
 
                 @Override
                 public void updateNowScreenState(boolean isScreenOn) throws RemoteException {
+                    enforceScreenOffCaller();
                     screenState = isScreenOn ? ScreenState.STATE_ON : ScreenState.STATE_OFF;
                 }
 
                 @Override
                 public void closeAndExit() throws RemoteException {
+                    enforceScreenOffCaller();
                     if (isBroadcastSent) isBroadcastSent = !removeStickyBroadcast();
                     System.out.println("Stop ScreenController Service.\n");
                     System.exit(0);
@@ -251,6 +281,7 @@ public class ScreenController {
             BinderContainer binderContainer = new BinderContainer(binder);
             // Create the Intent and attach the binder.
             intent = new Intent("intent.screenoff.sendBinder");
+            intent.setPackage(SCREEN_OFF_PACKAGE);
             intent.putExtra("binder", binderContainer);
 
             // Get the IActivityManager class.
@@ -289,7 +320,7 @@ public class ScreenController {
                     -1,
                     null,
                     null,
-                    null,
+                    new String[]{RECEIVE_BINDER_PERMISSION},
                     // appOp: OP_NONE. 0 is OP_COARSE_LOCATION, which Android 17 enforces on receivers.
                     -1,
                     null,
