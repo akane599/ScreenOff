@@ -20,7 +20,7 @@ import java.util.Scanner;
 public class ScreenController {
 
 
-    //发送广播需要的三个东西
+    // State required to send the broadcast.
     static boolean isBroadcastSent = false;
     static Intent intent = null;
     static Object iActivityManagerObj = null;
@@ -113,7 +113,7 @@ public class ScreenController {
         }
 
         Log.e("getBuiltInDisplay", "Android 14" + useDisplayControl);
-        //检查权限
+        // Check permission.
         int uid = android.os.Process.myUid();
         if (uid != 0 && uid != 2000) {
             System.err.printf("Insufficient permission! Need to be launched by adb (uid 2000) or root (uid 0), but your uid is %d \n", uid);
@@ -123,14 +123,14 @@ public class ScreenController {
 
         System.out.println("Start ScreenController Service.");
 
-        isBroadcastSent = sendBinderToAppByStickyBroadcast();//发送广播，将binder传给APP
+        isBroadcastSent = sendBinderToAppByStickyBroadcast(); // Send the broadcast and pass the binder to the app.
         if (!isBroadcastSent) {
             System.err.println("Failed to send broadcast!");
             System.exit(-1);
             return;
         }
 
-        //加入JVM异常关闭时的处理程序
+        // Register cleanup for JVM shutdown.
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
@@ -140,7 +140,7 @@ public class ScreenController {
 
 //        try {
 //            Scanner scanner = new Scanner(System.in);
-//            //用来保持进程不退出，同时如果用户输入exit则程序退出
+//            // Keep the process alive and exit when the user enters exit.
 //            String inline;
 //            while ((inline = scanner.nextLine()) != null) {
 //                if (inline.equals("exit"))
@@ -148,7 +148,7 @@ public class ScreenController {
 //            }
 //            scanner.close();
 //        } catch (Exception unused) {
-//            //用户使用nohup命令启动，scanner捕捉不到任何输入,会抛出异常。
+//            // When started with nohup, Scanner receives no input and throws an exception.
 //            while (true) ;
 //        }
 
@@ -210,7 +210,7 @@ public class ScreenController {
     private static boolean sendBinderToAppByStickyBroadcast() {
 
         try {
-            //生成binder
+            // Create the binder.
             IBinder binder = new IScreenOff.Stub() {
                 @Override
                 public void setPowerMode(boolean turnOff) throws RemoteException {
@@ -247,13 +247,13 @@ public class ScreenController {
 
             };
 
-            //把binder填到一个可以用Intent来传递的容器中
+            // Put the binder in a container that can be passed through an Intent.
             BinderContainer binderContainer = new BinderContainer(binder);
-            // 创建 Intent 对象，并将binder作为附加参数
+            // Create the Intent and attach the binder.
             intent = new Intent("intent.screenoff.sendBinder");
             intent.putExtra("binder", binderContainer);
 
-            // 获取 IActivityManager 类
+            // Get the IActivityManager class.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 iActivityManagerObj = Class.forName("android.app.IActivityManager$Stub").getMethod("asInterface", IBinder.class).invoke(null, Class.forName("android.os.ServiceManager").getDeclaredMethod("getService", String.class).invoke(null, "activity"));
             } else {
@@ -262,7 +262,7 @@ public class ScreenController {
                 iActivityManagerObj = getDefaultMethod.invoke(activityManagerNativeClass);
             }
 
-            // 获取 broadcastIntent 方法
+            // Get the broadcastIntent method.
             Method broadcastIntentMethod = Class.forName("android.app.IActivityManager").getDeclaredMethod(
                     "broadcastIntent",
                     IApplicationThread.class,
@@ -279,7 +279,7 @@ public class ScreenController {
                     boolean.class,
                     int.class
             );
-            // 调用 broadcastIntent 方法，发送粘性广播
+            // Invoke broadcastIntent to send the sticky broadcast.
             broadcastIntentMethod.invoke(
                     iActivityManagerObj,
                     null,
@@ -308,9 +308,9 @@ public class ScreenController {
         if (intent == null || iActivityManagerObj == null) return true;
 
         try {
-            // 获取 unbroadcastIntent 方法
+            // Get the unbroadcastIntent method.
             Method unbroadcastIntentMethod = Class.forName("android.app.IActivityManager").getDeclaredMethod("unbroadcastIntent", IApplicationThread.class, Intent.class, int.class);
-            // 调用 broadcastIntent 方法，发送粘性广播
+            // Invoke unbroadcastIntent to remove the sticky broadcast.
             unbroadcastIntentMethod.invoke(iActivityManagerObj, null, intent, -1);
             intent = null;
             iActivityManagerObj = null;

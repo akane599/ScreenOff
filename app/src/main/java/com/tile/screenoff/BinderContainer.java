@@ -4,7 +4,7 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class BinderContainer implements Parcelable { // implements Parcelable 之后，这个类就可以作为intent的附加参数了。
+public class BinderContainer implements Parcelable { // Implement Parcelable so this class can be passed as an Intent extra.
     private final IBinder binder;
 
     public BinderContainer(IBinder binder) {
@@ -12,7 +12,7 @@ public class BinderContainer implements Parcelable { // implements Parcelable �
     }
 
 
-    public IBinder getBinder() { //用这个函数来取出binder。其他函数都是自动生成的，只有这个函数是我自己写的。足以见得这个函数是多么的重要、多么的有技术含量
+    public IBinder getBinder() { // Retrieve the binder; the remaining methods are generated.
         return binder;
     }
 

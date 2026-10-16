@@ -67,7 +67,7 @@ public class MainActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             BinderContainer binderContainer = intent.getParcelableExtra("binder");
             IBinder binder = binderContainer.getBinder();
-            //如果binder已经失去活性了，则不再继续解析
+            // Stop processing when the binder is no longer alive.
             if (!binder.pingBinder()) return;
             iScreenOff = IScreenOff.Stub.asInterface(binder);
             enableScreenOffFunctions();
@@ -476,7 +476,7 @@ public class MainActivity extends Activity {
     private final Shizuku.OnRequestPermissionResultListener RL = (requestCode, grantResult) -> check();
 
 
-    //检查Shizuku权限，申请Shizuku权限的函数
+    // Check and request Shizuku permission.
     private void check() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
 
@@ -494,7 +494,7 @@ public class MainActivity extends Activity {
                 c = true;
             if (e.getClass() == IllegalStateException.class) {
                 b = false;
-                Toast.makeText(this, "shizuku未运行", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.shizuku_notrun, Toast.LENGTH_SHORT).show();
             }
         }
         if (b && c) {
@@ -505,7 +505,7 @@ public class MainActivity extends Activity {
                 out.flush();
                 out.close();
             } catch (IOException ioException) {
-                Toast.makeText(this, "激活失败", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.active_failed, Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -523,7 +523,7 @@ public class MainActivity extends Activity {
         super.onConfigurationChanged(newConfig);
     }
 
-    //一些收尾工作，取消注册监听器什么的
+    // Perform cleanup, such as unregistering listeners.
     @Override
     protected void onDestroy() {
         if (isPermissionResultListenerRegistered) Shizuku.removeRequestPermissionResultListener(RL);
@@ -589,12 +589,12 @@ public class MainActivity extends Activity {
         String file2 = getExternalFilesDir(null).getPath() + "/ScreenController.dex";
         try {
             ZipFile zipFile = new ZipFile(getPackageResourcePath());
-            // 遍历zip文件中的所有条目
+            // Iterate over all entries in the ZIP file.
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
 
-                // 如果条目名称为classes.dex，则解压该条目到指定目录
+                // Extract classes.dex to the target directory.
                 if (entry.getName().equals("classes.dex")) {
                     InputStream inputStream = zipFile.getInputStream(entry);
                     FileOutputStream fos = new FileOutputStream(file2);
@@ -608,7 +608,7 @@ public class MainActivity extends Activity {
                 }
             }
 
-            // 关闭ZipFile对象
+            // Close the ZipFile object.
             zipFile.close();
         } catch (IOException e) {
             e.printStackTrace();
