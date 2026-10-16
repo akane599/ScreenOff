@@ -44,6 +44,8 @@ import rikka.shizuku.Shizuku;
 
 public class GlobalService extends AccessibilityService implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private static final String BINDER_ACTION = "intent.screenoff.sendBinder";
+
 
     private WindowManager windowManager;
     private WindowManager.LayoutParams params;
@@ -81,6 +83,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            // whittle: a fake BinderContainer can only cause denial of service; upgrade to a non-sticky authenticated handoff when needed.
             switch (intent.getAction()) {
                 case "intent.screenoff.sendBinder":
                     BinderContainer binderContainer = intent.getParcelableExtra("binder");
@@ -275,10 +278,10 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
         filter.addAction("action.ScrOff");
         filter.addAction("intent.screenoff.exit");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(myReceiver, new IntentFilter("intent.screenoff.sendBinder"), RECEIVER_EXPORTED);
+            registerReceiver(myReceiver, new IntentFilter(BINDER_ACTION), RECEIVER_EXPORTED);
             registerReceiver(myReceiver, filter, RECEIVER_NOT_EXPORTED);
         } else {
-            registerReceiver(myReceiver, new IntentFilter("intent.screenoff.sendBinder"));
+            registerReceiver(myReceiver, new IntentFilter(BINDER_ACTION));
             registerReceiver(myReceiver, filter);
         }
         sp.registerOnSharedPreferenceChangeListener(this);

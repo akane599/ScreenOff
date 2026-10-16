@@ -58,6 +58,7 @@ import java.util.zip.ZipFile;
 import rikka.shizuku.Shizuku;
 
 public class MainActivity extends Activity {
+    private static final String BINDER_ACTION = "intent.screenoff.sendBinder";
     private boolean isExpand = false, isServiceOK = false, isPermissionResultListenerRegistered = false;
     private int scrOffKey, scrOnKey;
     public IScreenOff iScreenOff = null;
@@ -105,9 +106,9 @@ public class MainActivity extends Activity {
 
         setButtonsOnclick(isNight, sp);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(mBroadcastReceiver, new IntentFilter("intent.screenoff.sendBinder"), RECEIVER_EXPORTED);
+            registerReceiver(mBroadcastReceiver, new IntentFilter(BINDER_ACTION), RECEIVER_EXPORTED);
         } else {
-            registerReceiver(mBroadcastReceiver, new IntentFilter("intent.screenoff.sendBinder"));
+            registerReceiver(mBroadcastReceiver, new IntentFilter(BINDER_ACTION));
         }
         super.onCreate(savedInstanceState);
 
@@ -474,6 +475,10 @@ public class MainActivity extends Activity {
     private final Shizuku.OnRequestPermissionResultListener RL = (requestCode, grantResult) -> check();
 
 
+    private String activationCommand() {
+        return "sh " + getExternalFilesDir(null).getPath() + "/starter.sh " + getApplicationInfo().uid;
+    }
+
     // Check and request Shizuku permission.
     private void check() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
@@ -499,7 +504,7 @@ public class MainActivity extends Activity {
             try {
                 Process p = Shizuku.newProcess(new String[]{"sh"}, null, null);
                 OutputStream out = p.getOutputStream();
-                out.write(("sh " + getExternalFilesDir(null).getPath() + "/starter.sh\nexit\n").getBytes());
+                out.write((activationCommand() + "\nexit\n").getBytes());
                 out.flush();
                 out.close();
             } catch (IOException ioException) {
@@ -543,7 +548,7 @@ public class MainActivity extends Activity {
 
     public void showActivate() {
         unzipFiles();
-        final String command = "sh " + getExternalFilesDir(null).getPath() + "/starter.sh";
+        final String command = activationCommand();
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this)
                 .setMessage(String.format(getString(R.string.active_steps), command))
                 .setTitle(R.string.need_active)
