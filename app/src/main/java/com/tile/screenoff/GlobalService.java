@@ -83,7 +83,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
                 case "intent.screenoff.sendBinder":
                     BinderContainer binderContainer = intent.getParcelableExtra("binder");
                     IBinder binder = binderContainer.getBinder();
-                    //如果binder已经失去活性了，则不再继续解析
+                    // Stop processing when the binder is no longer alive.
                     if (!binder.pingBinder()) break;
                     iScreenOff = IScreenOff.Stub.asInterface(binder);
                     floatWindow();
@@ -165,7 +165,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
             public void onOrientationChanged(int orientation) {
                 if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) return;
                 boolean wake = ((orientation >= 360 - sensity || orientation <= sensity) || orientation >= 90 - sensity && orientation <= 90 + sensity) || orientation >= 180 - sensity && orientation <= 180 + sensity || orientation >= 270 - sensity && orientation <= 270 + sensity;
-                //下面是手机旋转准确角度与四个方向角度（0 90 180 270）的转换
+                // Convert the exact device rotation angle to one of four orientations (0, 90, 180, or 270).
                 if (wake) {
                     screenoff(false);
                     this.disable();
@@ -441,17 +441,17 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
     }
 
     private String buildIndexHtml(HttpRequest request) {
-        String nowState = "未知";
+        String nowState = "Unknown";
         try {
             switch (iScreenOff.getNowScreenState()) {
                 case 0:
-                    nowState = "息屏";
+                    nowState = "Screen off";
                     break;
                 case 1:
-                    nowState = "亮屏";
+                    nowState = "Screen on";
                     break;
                 default:
-                    nowState = "息屏运行";
+                    nowState = "Screen-off mode";
                     break;
             }
         } catch (RemoteException e) {

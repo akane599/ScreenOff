@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <!--
-        android:enabled  shortcut是否可用
-        android:icon  快捷图标
-        android:shortcutId  快捷方式唯一的id
-        android:shortcutShortLabel  短名称
-        android:shortcutLongLabel  这里是配置的长名称, launcher会优先选择长名称显示，显示不下会选择短名称
+        android:enabled  whether the shortcut is available
+        android:icon  shortcut icon
+        android:shortcutId  unique shortcut ID
+        android:shortcutShortLabel  short label
+        android:shortcutLongLabel  configured long label; the launcher prefers it and falls back to the short label when needed
 
         android:action    android.intent.action.VIEW
-        android:targetClass  要跳转到哪个目标类
-        android:targetPackage  指定一个目标应用的包名
+        android:targetClass  target class to open
+        android:targetPackage  target application package name
         categories  android.shortcut.conversation
     -->
     <shortcut
