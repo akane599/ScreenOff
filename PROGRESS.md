@@ -17,6 +17,8 @@ _Work items, stories and blockers live on the Sidequest board. This file keeps w
 - 2026-10-17: LAN server requires a per-install token (`?t=`, 403 otherwise), caps headers at 8 KiB (431), and uses a 10 s socket timeout with independent connections. It stays off by default.
 - 2026-10-17: Activation no longer extracts starter.sh/dex to external storage. The command copied from the dialog is `adb shell '<cmd>'` and builds CLASSPATH from `pm path` (the first entry covers split APKs). Exported ScrOff/ScrOn only open accessibility Settings (in a new task); only the tile and MainActivity write enabled_accessibility_services.
 - 2026-10-17: CI builds the debug APK only, because release signing needs an untracked keystore.properties. Old keystore values remain in public git history; rotating the key is the owner's call.
+- 2026-10-17: Owner rotated the release key: new RSA-4096 PKCS12 key (alias `screenoff`, CN=ScreenOff, O=akane599, cert SHA-256 `451403bc2e6f7c0c7a1631517095f1431f7dcf1379b6a48b4ad1fb27d8cb56f7`), kept outside the repo and referenced only by the untracked `keystore.properties`. The leaked old key is retired.
+- 2026-10-17: Owner confirmed the API 37 Advanced Protection Mode accessibility block is expected behavior; no workaround planned.
 
 ## Audit status
 | Area | Last run | Result | How |
