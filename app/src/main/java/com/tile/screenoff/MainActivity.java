@@ -472,7 +472,7 @@ public class MainActivity extends Activity {
 
 
     private String activationCommand() {
-        return "pm grant " + getPackageName() + " android.permission.WRITE_SECURE_SETTINGS; p=$(pm path " + getPackageName() + "); CLASSPATH=${p#package:} nohup app_process /system/bin com.tile.screenoff.ScreenController " + getApplicationInfo().uid + " > /dev/null 2>&1 &";
+        return "pm grant " + getPackageName() + " android.permission.WRITE_SECURE_SETTINGS; for p in $(pm path " + getPackageName() + "); do break; done; CLASSPATH=${p#package:} nohup app_process /system/bin com.tile.screenoff.ScreenController " + getApplicationInfo().uid + " > /dev/null 2>&1 &";
     }
 
     // Check and request Shizuku permission.
@@ -545,11 +545,11 @@ public class MainActivity extends Activity {
     public void showActivate() {
         final String command = activationCommand();
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this)
-                .setMessage(String.format(getString(R.string.active_steps), command))
+                .setMessage(String.format(getString(R.string.active_steps), "'" + command + "'"))
                 .setTitle(R.string.need_active)
                 .setNeutralButton(R.string.copy_cmd, (dialogInterface, i) -> {
-                    ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("c", "adb shell " + command));
-                    Toast.makeText(MainActivity.this, String.format(getString(R.string.cmd_copy_finish), command), Toast.LENGTH_SHORT).show();
+                    ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("c", "adb shell '" + command + "'"));
+                    Toast.makeText(MainActivity.this, String.format(getString(R.string.cmd_copy_finish), "'" + command + "'"), Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton(R.string.by_root, (dialoginterface, i) -> {
                     Process p;
