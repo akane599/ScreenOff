@@ -19,6 +19,7 @@ _Work items, stories and blockers live on the Sidequest board. This file keeps w
 - 2026-10-17: CI builds the debug APK only, because release signing needs an untracked keystore.properties. Old keystore values remain in public git history; rotating the key is the owner's call.
 - 2026-10-17: Owner rotated the release key: new RSA-4096 PKCS12 key (alias `screenoff`, CN=ScreenOff, O=akane599, cert SHA-256 `451403bc2e6f7c0c7a1631517095f1431f7dcf1379b6a48b4ad1fb27d8cb56f7`), kept outside the repo and referenced only by the untracked `keystore.properties`. The leaked old key is retired.
 - 2026-10-17: Owner confirmed the API 37 Advanced Protection Mode accessibility block is expected behavior; no workaround planned.
+- 2026-10-17: Floating button off by default (owner: the QS tile is enough). The overlay window also holds keep-screen-on during screen-off mode, so when hidden it stays attached as a 1px, alpha-0, NOT_TOUCHABLE window instead of being removed (verified on API 37: mHoldScreenWindow is ours and wakefulness stays Awake past the screen timeout). Release-signed pre-release is v21-fork.2.
 
 ## Audit status
 | Area | Last run | Result | How |

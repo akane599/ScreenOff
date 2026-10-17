@@ -12,7 +12,7 @@ All Java application code is in `app/src/main/java/com/tile/screenoff/`. Android
 - **Lazy reflection:** `ScreenController` and `DisplayControl` cache private framework `Method` objects on first use and return `null`/log on invocation failures.
 - **Broadcast-to-Binder handoff:** `BinderContainer` makes an `IBinder` parcelable so the helper can publish it via the reflected ActivityManager sticky-broadcast path.
 - **Preference-backed UI:** `MainActivity` writes settings as controls change; `GlobalService` implements `OnSharedPreferenceChangeListener` and refreshes the overlay.
-- **Overlay controller:** `GlobalService` uses `TYPE_ACCESSIBILITY_OVERLAY`, touch coordinates, snap-to-edge behavior, and persisted orientation-specific positions.
+- **Overlay controller:** `GlobalService` uses `TYPE_ACCESSIBILITY_OVERLAY`, touch coordinates, snap-to-edge behavior, and persisted orientation-specific positions. The overlay view also carries `setKeepScreenOn` during screen-off mode, so `floatWindow()` never removes it while the service runs: with `float` off (the default) it becomes an invisible, untouchable 1px window.
 - **Single-connection server restart:** `SimpleTcpServer` accepts one socket, handles it on worker threads, and restarts after a response or disconnect.
 
 ## Error Handling
