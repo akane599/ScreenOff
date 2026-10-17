@@ -173,7 +173,7 @@ public class MainActivity extends Activity {
         s8 = findViewById(R.id.s8);
         final String setting = Settings.Secure.getString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
         s1.setChecked(setting != null && setting.contains(getPackageName()));
-        s2.setChecked(sp.getBoolean("float", true));
+        s2.setChecked(sp.getBoolean("float", false));
         s3.setChecked(sp.getBoolean("land", false));
         s4.setChecked(!sp.getBoolean("canmove", true));
         s5.setChecked(sp.getBoolean("doubleTap", false));
@@ -199,16 +199,15 @@ public class MainActivity extends Activity {
         sc.setEnabled(s2.isChecked());
         sd.setEnabled(s2.isChecked());
         s1.setOnCheckedChangeListener((compoundButton, isChecked) -> {
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !((PowerManager) getSystemService(Service.POWER_SERVICE)).isIgnoringBatteryOptimizations(getPackageName()))
-                startActivity(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + getPackageName())));
-
-            if (!isServiceOK) {
-                compoundButton.setChecked(false);
-                Toast.makeText(MainActivity.this, R.string.active_first, Toast.LENGTH_SHORT).show();
-                return;
-            }
             if (isChecked) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !((PowerManager) getSystemService(Service.POWER_SERVICE)).isIgnoringBatteryOptimizations(getPackageName()))
+                    startActivity(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + getPackageName())));
+
+                if (!isServiceOK) {
+                    compoundButton.setChecked(false);
+                    Toast.makeText(MainActivity.this, R.string.active_first, Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 final String serviceName = new ComponentName(getPackageName(), GlobalService.class.getName()).flattenToString();
                 final String oldSetting = Settings.Secure.getString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
                 final String newSetting = oldSetting == null ? serviceName : serviceName + ":" + oldSetting;

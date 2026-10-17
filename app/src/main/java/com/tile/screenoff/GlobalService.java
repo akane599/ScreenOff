@@ -326,21 +326,24 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
     }
 
     public void floatWindow() {
-        if (sp.getBoolean("float", true)) {
-            if (!exist) {
-                windowManager.addView(view, params);
-                exist = true;
-            } else {
-                windowManager.updateViewLayout(view, params);
-            }
+        // The view also holds keep-screen-on during screen-off mode, so a hidden button stays attached as an invisible, untouchable 1px window.
+        if (sp.getBoolean("float", false)) {
+            params.width = size;
+            params.height = size;
+            params.alpha = sp.getInt("tran", 90) * 0.01f;
+            params.flags &= ~WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
         } else {
-            if (view != null) {
-                try {
-                    windowManager.removeViewImmediate(view);
-                } catch (Exception ignored) {
-                }
-                exist = false;
-            }
+            params.width = 1;
+            params.height = 1;
+            params.alpha = 0;
+            params.flags |= WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+            view.setVisibility(View.VISIBLE);
+        }
+        if (!exist) {
+            windowManager.addView(view, params);
+            exist = true;
+        } else {
+            windowManager.updateViewLayout(view, params);
         }
     }
 
@@ -356,7 +359,7 @@ public class GlobalService extends AccessibilityService implements SharedPrefere
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         boolean isLand = newConfig.orientation == Configuration.ORIENTATION_PORTRAIT;
-        if (sp.getBoolean("land", false))
+        if (sp.getBoolean("land", false) && sp.getBoolean("float", false))
             view.setVisibility(isLand ? View.GONE : View.VISIBLE);
         GetWidthHeight();
         params.x = sp.getInt("x" + (isLand ? "1" : "2"), 0);
