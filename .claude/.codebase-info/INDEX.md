@@ -1,6 +1,6 @@
 # Codebase Map — ScreenOff
 
-*Last Updated: 2026-10-16*
+*Last Updated: 2026-10-17*
 
 ScreenOff is a single-module Android app that turns the display panel off while leaving Android and other apps running. It uses an accessibility overlay for global controls and a privileged `app_process` helper, activated through Shizuku, ADB, or root.
 

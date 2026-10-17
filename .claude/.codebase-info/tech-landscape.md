@@ -1,6 +1,6 @@
 # Technology Landscape
 
-*Last Updated: 2026-10-16*
+*Last Updated: 2026-10-17*
 
 ## Source-of-Truth Files
 
@@ -29,6 +29,6 @@
 
 ## Infrastructure
 
-There is no repository-defined backend, container, CI workflow, database, or monitoring stack. Runtime assets are packaged under `app/src/main/assets/`. `app/build.gradle` contains a release `signingConfigs` block; keep its keystore location and credentials out of documentation and source changes unless the task explicitly requires signing work.
+There is no repository-defined backend, container, database, or monitoring stack. CI is a single GitHub Actions workflow, `.github/workflows/build-apk.yml` (JDK 21, `:app:assembleDebug :app:testDebugUnitTest`, debug APK uploaded as an artifact). Runtime assets are packaged under `app/src/main/assets/`. `app/build.gradle` contains a release `signingConfigs` block; keep its keystore location and credentials out of documentation and source changes unless the task explicitly requires signing work.
 
-The current mapped tree has no application test source set. Build, unit-test, lint, and screenshot commands are documented in `onboarding.md`; this mapping intentionally did not run Gradle.
+JVM unit tests live in `app/src/test/` (HTTP parser/request). Build, unit-test, lint, and screenshot commands are documented in `onboarding.md`; this mapping intentionally did not run Gradle.

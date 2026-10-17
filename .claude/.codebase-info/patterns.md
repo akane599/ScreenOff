@@ -1,6 +1,6 @@
 # Patterns & Conventions
 
-*Last Updated: 2026-10-16*
+*Last Updated: 2026-10-17*
 
 ## Code Organization
 
@@ -21,8 +21,8 @@ The code generally logs or prints reflection, I/O, and Binder failures, often co
 
 ## Testing
 
-No `app/src/test/` or `app/src/androidTest/` source set is present in the mapped tree. The most direct validation is an Android build/lint run plus device verification of activation, Binder handoff, display power changes, accessibility overlay behavior, and optional port-20000 requests. The repository's documented commands are listed in `onboarding.md`.
+`app/src/test/java/com/tile/screenoff/` holds JVM tests for the HTTP parser and request (`HttpRequestParserTest`, `HttpRequestTest`); there is no `androidTest` source set. Beyond those, the most direct validation is an Android build/lint run plus device verification of activation, Binder handoff, display power changes, accessibility overlay behavior, and optional port-20000 requests. The repository's documented commands are listed in `onboarding.md`.
 
 ## Configuration
 
-Preferences are stored under the name `s`; keys include `float`, `land`, `canmove`, `doubleTap`, `shake`, `volume`, `net`, `size`, `tran`, `sensity`, `scrOffKey`, `scrOnKey`, and orientation-specific `x1`/`y1`/`x2`/`y2`. The `net` preference controls server startup. Release signing is configured in `app/build.gradle`; never copy its credential values into map documents.
+Preferences are stored under the name `s`; keys include `float`, `land`, `canmove`, `doubleTap`, `shake`, `volume`, `net`, `size`, `tran`, `sensity`, `scrOffKey`, `scrOnKey`, `net_token` (LAN token), and orientation-specific `x1`/`y1`/`x2`/`y2`. The `net` preference controls server startup. Release signing is configured in `app/build.gradle`; never copy its credential values into map documents.

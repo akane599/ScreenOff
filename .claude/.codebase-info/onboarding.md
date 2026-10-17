@@ -1,6 +1,6 @@
 # Onboarding
 
-*Last Updated: 2026-10-16*
+*Last Updated: 2026-10-17*
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@
 | Command | Purpose |
 |---------|---------|
 | `./gradlew :app:assembleDebug --console=plain -q` | Build a debug APK |
-| `./gradlew :app:testDebugUnitTest --console=plain -q` | Run the configured debug unit-test task; no app test sources are currently mapped |
+| `./gradlew :app:testDebugUnitTest --console=plain -q` | Run the JVM unit tests in `app/src/test/` (`HttpRequestParserTest`, `HttpRequestTest`) |
 | `./gradlew :app:lintDebug --console=plain -q` | Run debug lint |
 | `./gradlew :app:installDebug -q` | Install the debug build |
 | `adb shell am start -n com.tile.screenoff/.MainActivity` | Launch the main activity |
@@ -41,14 +41,15 @@ Trace the entry point from `AndroidManifest.xml`, `shortcuts.xml`, or the tile c
 
 ### Change the LAN protocol
 
-Update the parser/transport and `GlobalService.output()` together. Check the packaged assets in `app/src/main/assets/`, preserve explicit response headers, and document any new request target in `communication.md`. Remember that the server has no authentication.
+Update the parser/transport and `GlobalService.output()` together. Check the packaged assets in `app/src/main/assets/`, preserve explicit response headers, and document any new request target in `communication.md`. Keep the `?t=` token check, the 8 KiB header cap and the socket timeout in place.
 
 ## Gotchas
 
-- The display helper is not a normal Android service. It is extracted from the APK's `classes.dex` and started with `app_process` by `assets/starter.sh`.
+- The display helper is not a normal Android service. It is loaded straight from the installed APK (`CLASSPATH` from `pm path`) and started with `app_process` by the activation command; it only serves calls from the app uid given as its argument.
 - The helper requires shell or root identity and `WRITE_SECURE_SETTINGS`; a successful app build does not prove activation works.
 - Android API 34+ uses `DisplayControl`, while older paths use reflected `SurfaceControl` methods. Test on the target API levels when changing display code.
 - The accessibility overlay and key interception depend on the service being enabled and on the relevant system permissions.
-- LAN control listens on port `20000` without authentication. Enable it only on a trusted network.
+- LAN control listens on port `20000` and requires the per-install `?t=` token (plain HTTP). Enable it only on a trusted network.
+- CI: `.github/workflows/build-apk.yml` builds the debug APK and runs unit tests on every push to `main` (and on manual dispatch), uploading `ScreenOff-debug-<sha>` as an artifact.
 - `app/build.gradle` contains release signing configuration. Do not expose or copy its keystore credentials.
 - This map was created without running Gradle; dependency resolution may require access to the configured Google and Maven Central repositories.
