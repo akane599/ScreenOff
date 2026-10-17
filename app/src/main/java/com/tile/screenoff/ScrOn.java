@@ -20,7 +20,7 @@ public class ScrOn extends Activity {
             final String serviceName = new ComponentName(getPackageName(), GlobalService.class.getName()).flattenToString();
             Bundle bundle = new Bundle();
             bundle.putString(":settings:fragment_args_key", serviceName);
-            startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).putExtra(":settings:fragment_args_key", serviceName).putExtra(":settings:show_fragment_args", bundle));
+            startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(":settings:fragment_args_key", serviceName).putExtra(":settings:show_fragment_args", bundle));
         }
     }
 
