@@ -43,17 +43,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.Locale;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import rikka.shizuku.Shizuku;
 
@@ -476,7 +472,7 @@ public class MainActivity extends Activity {
 
 
     private String activationCommand() {
-        return "sh " + getExternalFilesDir(null).getPath() + "/starter.sh " + getApplicationInfo().uid;
+        return "pm grant " + getPackageName() + " android.permission.WRITE_SECURE_SETTINGS; p=$(pm path " + getPackageName() + "); CLASSPATH=${p#package:} nohup app_process /system/bin com.tile.screenoff.ScreenController " + getApplicationInfo().uid + " > /dev/null 2>&1 &";
     }
 
     // Check and request Shizuku permission.
@@ -547,7 +543,6 @@ public class MainActivity extends Activity {
     }
 
     public void showActivate() {
-        unzipFiles();
         final String command = activationCommand();
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this)
                 .setMessage(String.format(getString(R.string.active_steps), command))
@@ -571,50 +566,5 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             builder.setPositiveButton(R.string.by_shizuku, (dialogInterface, i) -> check());
         builder.show();
-    }
-
-    private void unzipFiles() {
-
-        String file1 = getExternalFilesDir(null).getPath() + "/starter.sh";
-        try {
-            InputStream is = getAssets().open("starter.sh");
-            FileOutputStream fileOutputStream = new FileOutputStream(file1);
-            byte[] buffer = new byte[1024];
-            int byteRead;
-            while (-1 != (byteRead = is.read(buffer))) {
-                fileOutputStream.write(buffer, 0, byteRead);
-            }
-            is.close();
-            fileOutputStream.flush();
-            fileOutputStream.close();
-        } catch (IOException ignored) {
-        }
-        String file2 = getExternalFilesDir(null).getPath() + "/ScreenController.dex";
-        try {
-            ZipFile zipFile = new ZipFile(getPackageResourcePath());
-            // Iterate over all entries in the ZIP file.
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-
-                // Extract classes.dex to the target directory.
-                if (entry.getName().equals("classes.dex")) {
-                    InputStream inputStream = zipFile.getInputStream(entry);
-                    FileOutputStream fos = new FileOutputStream(file2);
-                    byte[] buffer = new byte[1024];
-                    int len;
-                    while ((len = inputStream.read(buffer)) > 0) {
-                        fos.write(buffer, 0, len);
-                    }
-                    fos.close();
-                    break;
-                }
-            }
-
-            // Close the ZipFile object.
-            zipFile.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
